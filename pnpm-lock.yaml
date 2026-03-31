@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@shuding/opentype.js@1.4.0-beta.0':
+    hash: ejpofmnq4kf3kcg6gzb5sex6je
+    path: patches/@shuding__opentype.js@1.4.0-beta.0.patch
   yoga-layout@3.2.1:
     hash: fcspke77bs3aszvcx6say6fj7q
     path: patches/yoga-layout@3.2.1.patch
@@ -15,7 +18,7 @@ importers:
     dependencies:
       '@shuding/opentype.js':
         specifier: 1.4.0-beta.0
-        version: 1.4.0-beta.0
+        version: 1.4.0-beta.0(patch_hash=ejpofmnq4kf3kcg6gzb5sex6je)
       css-background-parser:
         specifier: ^0.1.0
         version: 0.1.0
@@ -3100,7 +3103,7 @@ packages:
     engines: {node: '>= 10'}
     dev: false
 
-  /@shuding/opentype.js@1.4.0-beta.0:
+  /@shuding/opentype.js@1.4.0-beta.0(patch_hash=ejpofmnq4kf3kcg6gzb5sex6je):
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
     engines: {node: '>= 8.0.0'}
     hasBin: true
@@ -3108,6 +3111,7 @@ packages:
       fflate: 0.7.3
       string.prototype.codepointat: 0.2.1
     dev: false
+    patched: true
 
   /@sideway/address@4.1.4:
     resolution: {integrity: sha512-7vwq+rOHVWjyXxVlR76Agnvhy8I9rpzjosTESvmhNeXOXdZZB15Fl+TI9x1SiHZH5Jv2wTGduSxFDIaq0m3DUw==}

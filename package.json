@@ -142,7 +142,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "yoga-layout@3.2.1": "patches/yoga-layout@3.2.1.patch"
+      "yoga-layout@3.2.1": "patches/yoga-layout@3.2.1.patch",
+      "@shuding/opentype.js@1.4.0-beta.0": "patches/@shuding__opentype.js@1.4.0-beta.0.patch"
     }
   }
 }

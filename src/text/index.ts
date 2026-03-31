@@ -540,6 +540,11 @@ export default async function* buildTextNodes(
   let wordBuffer: string | null = null
   let bufferedOffset = 0
 
+  // Detect RTL text (Arabic, Arabic Extended, Arabic Presentation Forms, Hebrew)
+  const rtlRegex =
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0590-\u05FF]/
+  const isRTL = rtlRegex.test(processedContent)
+
   for (let i = 0; i < texts.length; i++) {
     // Skip whitespace and empty characters.
     const layout = wordPositionInLayout[i]
@@ -573,11 +578,18 @@ export default async function* buildTextNodes(
       leftOffset += textIndentNumber
     }
 
-    if (lineWidths.length > 1) {
+    if (lineWidths.length > 1 || isRTL) {
       // Calculate alignment. Note that for Flexbox, there is only text
       // alignment when the container is multi-line.
       const remainingWidth = containerWidth - lineWidths[line]
-      if (textAlign === 'right' || textAlign === 'end') {
+      if (
+        textAlign === 'right' ||
+        textAlign === 'end' ||
+        (isRTL &&
+          textAlign !== 'center' &&
+          textAlign !== 'left' &&
+          textAlign !== 'justify')
+      ) {
         leftOffset += remainingWidth
       } else if (textAlign === 'center') {
         leftOffset += remainingWidth / 2
@@ -720,14 +732,15 @@ export default async function* buildTextNodes(
     } else if (embedFont) {
       // If the current word and the next word are on the same line, we try to
       // merge them together to better handle the kerning.
+      // For RTL text, ALL segments on the same line (including spaces) are
+      // accumulated so the Bidi engine can handle word-level reordering.
       if (
-        !text.includes(Tab) &&
-        !wordSeparators.includes(text) &&
         texts[i + 1] &&
         nextLayout &&
         !nextLayout.isImage &&
         topOffset === nextLayout.y &&
-        !isLastDisplayedBeforeEllipsis
+        !isLastDisplayedBeforeEllipsis &&
+        (isRTL || (!text.includes(Tab) && !wordSeparators.includes(text)))
       ) {
         if (wordBuffer === null) {
           bufferedOffset = leftOffset
@@ -736,9 +749,32 @@ export default async function* buildTextNodes(
         continue
       }
 
-      const finalizedSegment = wordBuffer === null ? text : wordBuffer + text
-      const finalizedLeftOffset =
+      let finalizedSegment = wordBuffer === null ? text : wordBuffer + text
+      let finalizedLeftOffset =
         wordBuffer === null ? leftOffset : bufferedOffset
+
+      if (isRTL) {
+        // Trim accumulated RTL text — trailing spaces at line breaks become
+        // leading spaces after Bidi character reversal.
+        finalizedSegment = finalizedSegment.trim()
+        // Measure the actual rendered text width for precise alignment,
+        // rather than relying on pre-computed lineWidths which can diverge
+        // from actual width due to Arabic shaping.
+        const rtlTextWidth = measureGrapheme(
+          finalizedSegment.replace(/(\t)+/g, '')
+        )
+        let rtlOffset = containerWidth - rtlTextWidth
+        if (textAlign === 'center') {
+          rtlOffset = rtlOffset / 2
+        } else if (textAlign === 'left' || textAlign === 'justify') {
+          rtlOffset = 0
+        }
+        if (line === 0 && textIndentNumber !== 0) {
+          rtlOffset += textIndentNumber
+        }
+        finalizedLeftOffset = rtlOffset
+      }
+
       const finalizedWidth = layout.width + leftOffset - finalizedLeftOffset
 
       const band = buildUnderlineBand(topOffset)

@@ -1,0 +1,86 @@
+diff --git a/src/features/applySubstitution.js b/src/features/applySubstitution.js
+index ac680fd1b0fe79e4688f171e4960f71c324e4b08..78d9bb4c8fd7709a1c5c0158c4894677ce161b1b 100644
+--- a/src/features/applySubstitution.js
++++ b/src/features/applySubstitution.js
+@@ -55,6 +55,7 @@ function ligatureSubstitutionFormat1(action, tokens, index) {
+ const SUBSTITUTIONS = {
+     11: singleSubstitutionFormat1,
+     12: singleSubstitutionFormat2,
++    53: chainingSubstitutionFormat3,
+     63: chainingSubstitutionFormat3,
+     41: ligatureSubstitutionFormat1
+ };
+diff --git a/src/features/featureQuery.js b/src/features/featureQuery.js
+index 4aead8425e07167e2097f8c35696da14a58ee8e9..8dbaa9c5037cf3e9c8d1ef3c5cb016409f8f16e5 100644
+--- a/src/features/featureQuery.js
++++ b/src/features/featureQuery.js
+@@ -99,6 +99,43 @@ function lookupCoverageList(coverageList, contextParams) {
+     return lookupList;
+ }
+ 
++/**
++ * Handle context substitution - format 3 (coverage-based)
++ * @param {ContextParams} contextParams context params to lookup
++ */
++function contextSubstitutionFormat3(contextParams, subtable) {
++    if (contextParams.context.length < subtable.coverages.length) {
++        return [];
++    }
++    let inputLookups = lookupCoverageList(
++        subtable.coverages, contextParams
++    );
++    if (inputLookups === -1) {
++        return [];
++    }
++    let substitutions = [];
++    if (inputLookups.length === subtable.coverages.length) {
++        for (let i = 0; i < subtable.lookupRecords.length; i++) {
++            const lookupRecord = subtable.lookupRecords[i];
++            const lookupListIndex = lookupRecord.lookupListIndex;
++            const lookupTable = this.getLookupByIndex(lookupListIndex);
++            for (let s = 0; s < lookupTable.subtables.length; s++) {
++                const subtable = lookupTable.subtables[s];
++                const lookup = this.getLookupMethod(lookupTable, subtable);
++                const substitutionType = this.getSubstitutionType(lookupTable, subtable);
++                if (substitutionType === '12') {
++                    for (let n = 0; n < inputLookups.length; n++) {
++                        const glyphIndex = contextParams.get(n);
++                        const substitution = lookup(glyphIndex);
++                        if (substitution) substitutions.push(substitution);
++                    }
++                }
++            }
++        }
++    }
++    return substitutions;
++}
++
+ /**
+  * Handle chaining context substitution - format 3
+  * @param {ContextParams} contextParams context params to lookup
+@@ -302,6 +339,10 @@ FeatureQuery.prototype.getLookupMethod = function(lookupTable, subtable) {
+             return glyphIndex => singleSubstitutionFormat2.apply(
+                 this, [glyphIndex, subtable]
+             );
++        case '53':
++            return contextParams => contextSubstitutionFormat3.apply(
++                this, [contextParams, subtable]
++            );
+         case '63':
+             return contextParams => chainingSubstitutionFormat3.apply(
+                 this, [contextParams, subtable]
+@@ -388,6 +429,14 @@ FeatureQuery.prototype.lookupFeature = function (query) {
+                         }));
+                     }
+                     break;
++                case '53':
++                    substitution = lookup(contextParams);
++                    if (Array.isArray(substitution) && substitution.length) {
++                        substitutions.splice(currentIndex, 1, new SubstitutionAction({
++                            id: 53, tag: query.tag, substitution
++                        }));
++                    }
++                    break;
+                 case '63':
+                     substitution = lookup(contextParams);
+                     if (Array.isArray(substitution) && substitution.length) {
