@@ -3105,7 +3105,7 @@ packages:
     engines: {node: '>= 8.0.0'}
     hasBin: true
     dependencies:
-      fflate: 0.7.3
+      fflate: 0.7.4
       string.prototype.codepointat: 0.2.1
     dev: false
 
@@ -5148,10 +5148,6 @@ packages:
     dependencies:
       bser: 2.1.1
     dev: true
-
-  /fflate@0.7.3:
-    resolution: {integrity: sha512-0Zz1jOzJWERhyhsimS54VTqOteCNwRtIlh8isdL0AXLo0g7xNTfTL7oWrkmCnPhZGocKIkWHBistBrrpoNH3aw==}
-    dev: false
 
   /fflate@0.7.4:
     resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
