@@ -124,7 +124,7 @@
     "vitest": "^0.32.0"
   },
   "dependencies": {
-    "@shuding/opentype.js": "file:/home/user/opentype.js",
+    "@shuding/opentype.js": "1.4.0-beta.0",
     "css-background-parser": "^0.1.0",
     "css-box-shadow": "1.0.0-3",
     "css-gradient-parser": "^0.0.17",
